@@ -3,8 +3,11 @@
 #ifndef SRC_LIB_LIB_H_
 #define SRC_LIB_LIB_H_
 
+// string.c
 char* uint_to_string(const unsigned n);
+char* concat(const char *s1, const char *s2);
 
+// lib.c
 unsigned num_of_digits(const unsigned n);
 
 #endif  // SRC_LIB_LIB_H_

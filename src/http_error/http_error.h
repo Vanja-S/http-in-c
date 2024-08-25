@@ -1,7 +1,7 @@
 // Copyright 2024 Vanja S.
 
-#ifndef SRC_HTTP_ERROR_H_
-#define SRC_HTTP_ERROR_H_
+#ifndef SRC_HTTP_ERROR_HTTP_ERROR_H_
+#define SRC_HTTP_ERROR_HTTP_ERROR_H_
 
 #include <stdint.h>
 
@@ -14,5 +14,5 @@ HTTPError* create_error(uint16_t status_code, char statusMessage[]);
 
 char* error_to_string(HTTPError* http_error);
 
-#endif  // SRC_HTTP_ERROR_H_
+#endif  // SRC_HTTP_ERROR_HTTP_ERROR_H_
 

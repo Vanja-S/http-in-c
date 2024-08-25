@@ -1,6 +1,7 @@
 // Copyright 2024 Vanja Stojanović
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -8,11 +9,10 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "lib/lib.h"
-#include "log.h"
+#include "log/log.h"
 
 #define SERVER_PORT 80
 
-char* concat(const char *s1, const char *s2);
 
 int main(int argc, char* argv[]) {
   // 1. Implement socket listening and accept requests
@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
   int status;
   int sockfd;
   struct addrinfo sockaddrinfo, *servinfo;
+  struct sockaddr_storage their_addr;
 
   // init the socket
   if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
@@ -35,28 +36,48 @@ int main(int argc, char* argv[]) {
   sockaddrinfo.ai_flags = AI_PASSIVE;
 
   // prepare the address space and bind it
-  if ((status = getaddrinfo(NULL, uint_to_string(SERVER_PORT), &sockaddrinfo, &servinfo)) != 0) {
+  status = getaddrinfo(NULL,
+                       uint_to_string(SERVER_PORT),
+                       &sockaddrinfo,
+                       &servinfo);
+  if (status != 0) {
     const char* gai_error = gai_strerror(status);
     error(concat("Cannot get socket info", gai_error));
   }
 
-  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
+  status = setsockopt(sockfd,
+                      SOL_SOCKET,
+                      SO_REUSEADDR,
+                      &(int){1},
+                      sizeof(int));
+  if (status == -1) {
     error("setsockopt error");
   }
 
   // bind the socket to a sockaddr_in
-  if (bind(sockfd, servinfo->ai_addr, servinfo->ai_protocol)) {
+  if (bind(sockfd, servinfo->ai_addr, servinfo->ai_protocol) < 0) {
     error("Bind failed!");
+  }
+
+  // listen for incoming connections
+  if (listen(sockfd, 10) < 0) {
+    error("Listening failed!");
+  }
+
+  // server loop for accepting incoming connections
+
+  while (1) {
+    socklen_t sin_size = sizeof(their_addr);
+    int connfd = accept(sockfd, (struct sockaddr*)&their_addr, &sin_size);
+    if (connfd == -1) {
+      perror("accept");
+      continue;
+    }
+
+
   }
 
   return EXIT_SUCCESS;
 }
 
-char* concat(const char *s1, const char *s2) {
-    const size_t len1 = strlen(s1);
-    const size_t len2 = strlen(s2);
-    char *result = malloc(len1 + len2 + 1);  // +1 for the null-terminator
-    memcpy(result, s1, len1);
-    memcpy(result + len1, s2, len2 + 1);  // +1 to copy the null-terminator
-    return result;
-}
+

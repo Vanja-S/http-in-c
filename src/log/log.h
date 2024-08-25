@@ -1,7 +1,7 @@
 // Copyright 2024 Vanja S.
 
-#ifndef SRC_LOG_H_
-#define SRC_LOG_H_
+#ifndef SRC_LOG_LOG_H_
+#define SRC_LOG_LOG_H_
 
 enum LogLevel {
   DEBUG,
@@ -19,4 +19,4 @@ void debug(char* msg);
 
 void error(char* msg);
 
-#endif  // SRC_LOG_H_
+#endif  // SRC_LOG_LOG_H_
