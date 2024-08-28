@@ -75,11 +75,14 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    log(extract_peer_addr(their_addr, connfd));
+    char* conn_msg;
+    struct sockaddr_in* sin = (struct sockaddr_in*)&their_addr; 
+    snprintf(conn_msg, 100, "Recieved a connection from %s", sin->sin_addr.s_addr);
+    log(conn_msg);
 
     if (!fork()) {
       close(sockfd);
-      
+
     }
   }
 
