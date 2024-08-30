@@ -7,12 +7,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 #include "lib/lib.h"
 #include "log/log.h"
 
 #define SERVER_PORT 80
+#define RECV_BUFFER 1024
 
 
 int main(int argc, char* argv[]) {
@@ -32,7 +34,7 @@ int main(int argc, char* argv[]) {
   }
 
   memset(&sockaddrinfo, 0, sizeof(sockaddrinfo));
-  sockaddrinfo.ai_flags = AF_INET;
+  sockaddrinfo.ai_family = AF_INET;
   sockaddrinfo.ai_socktype = SOCK_STREAM;
   sockaddrinfo.ai_flags = AI_PASSIVE;
 
@@ -57,9 +59,11 @@ int main(int argc, char* argv[]) {
 
   // bind the socket to a sockaddr_in
   if (bind(sockfd, servinfo->ai_addr, servinfo->ai_protocol) < 0) {
+    close(sockfd);
     error("Bind failed!");
   }
 
+  freeaddrinfo(servinfo);
   // listen for incoming connections
   if (listen(sockfd, 10) < 0) {
     error("Listening failed!");
@@ -79,8 +83,14 @@ int main(int argc, char* argv[]) {
 
     if (!fork()) {
       close(sockfd);
-      
+      char buffer[RECV_BUFFER];
+      if (recv(connfd, buffer, RECV_BUFFER, MSG_DONTWAIT) > 0) {
+        printf("%s", buffer);
+      }
+      close(connfd);
+      return EXIT_SUCCESS;
     }
+    close(connfd);
   }
 
   return EXIT_SUCCESS;
