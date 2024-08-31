@@ -12,11 +12,13 @@ void set_log_level(enum LogLevel log_level) {
 }
 
 void log(char* msg) {
-  printf("[LOG]: %s", msg);
+  printf("[LOG]: %s\n", msg);
+  fflush(stdout);
 }
 
 void debug(char* msg) {
-  printf("[DEBUG]: %s", msg);
+  printf("[DEBUG]: %s\n", msg);
+  fflush(stdout);
 }
 
 void error(char* msg) {

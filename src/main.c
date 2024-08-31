@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
   if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
     error("Socket cannot be opened");
   }
+  log("Socker file descriptor opened.");
 
   memset(&sockaddrinfo, 0, sizeof(sockaddrinfo));
   sockaddrinfo.ai_family = AF_INET;
@@ -53,21 +54,37 @@ int main(int argc, char* argv[]) {
                       SO_REUSEADDR,
                       &(int){1},
                       sizeof(int));
-  if (status == -1) {
+  if (status != 0) {
     error("setsockopt error");
   }
 
   // bind the socket to a sockaddr_in
-  if (bind(sockfd, servinfo->ai_addr, servinfo->ai_protocol) < 0) {
+  if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) < 0) {
     close(sockfd);
     error("Bind failed!");
   }
+  log("Bind succeded.");
+
+  // Extract IP and port info
+  char ip_string[INET_ADDRSTRLEN];
+  char msg[INET_ADDRSTRLEN+20];
+  struct sockaddr_in* ip_info = (struct sockaddr_in*)servinfo->ai_addr;
+  if (inet_ntop(servinfo->ai_family, &(ip_info->sin_addr), ip_string, INET_ADDRSTRLEN) == NULL) {
+    error("inet_ntop error when getting ip:");
+  }
+  snprintf(msg,
+           INET_ADDRSTRLEN+20,
+           "Socket: %s:%d",
+           ip_string,
+           ntohs(ip_info->sin_port));
+  log(msg);
 
   freeaddrinfo(servinfo);
   // listen for incoming connections
   if (listen(sockfd, 10) < 0) {
     error("Listening failed!");
   }
+  log("Listening for incoming connections...");
 
   // server loop for accepting incoming connections
 
