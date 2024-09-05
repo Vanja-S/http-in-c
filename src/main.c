@@ -87,7 +87,6 @@ int main(int argc, char* argv[]) {
   log("Listening for incoming connections...");
 
   // server loop for accepting incoming connections
-
   while (1) {
     socklen_t sin_size = sizeof(their_addr);
     int connfd = accept(sockfd, (struct sockaddr*)&their_addr, &sin_size);
@@ -101,8 +100,52 @@ int main(int argc, char* argv[]) {
     if (!fork()) {
       close(sockfd);
       char buffer[RECV_BUFFER];
-      if (recv(connfd, buffer, RECV_BUFFER, MSG_DONTWAIT) > 0) {
-        printf("%s", buffer);
+      char* headers = NULL, *body = NULL;
+      int recv_bytes, total_headers = 0, total_body = 0;
+      const char* body_delimiter = NULL;
+
+      memset(buffer, 0, sizeof(buffer));
+
+      // Extract headers
+      while (1) {
+        memset(buffer, 0, sizeof(buffer));
+        recv_bytes = recv(connfd, buffer, RECV_BUFFER, MSG_DONTWAIT);
+        if (recv_bytes <= 0) {
+          log("Recieved headers");
+          break;
+        }
+        ++total_headers;
+        printf("%.*s\n", recv_bytes, buffer);
+
+        if ((body_delimiter = strstr(buffer, "\r\n\r\n")) != NULL) {
+          concat_char_buffer(&headers,
+                             buffer,
+                             total_headers,
+                             RECV_BUFFER);
+
+          ++total_body;
+          concat_char_buffer(&body,
+                             body_delimiter + 4,
+                             total_body,
+                             RECV_BUFFER);
+
+          log("Received complete headers and started body");
+          break;
+        } else {
+          concat_char_buffer(&headers, buffer, total_headers, recv_bytes);
+        }
+      }
+
+      if (headers != NULL) {
+        printf("Headers:\n%s\n", headers);
+      } else {
+        printf("No headers received\n");
+      }
+
+      if (body != NULL) {
+        printf("Body:\n%s\n", body);
+      } else {
+        printf("No body received\n");
       }
       close(connfd);
       return EXIT_SUCCESS;
