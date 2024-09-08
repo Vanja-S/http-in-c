@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "headers.h"
+#include "http.h"
 
 int header_exists(const char* header, char* headers_seg) {
   if (strstr(header, headers_seg) != NULL) {
