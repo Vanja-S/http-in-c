@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include "lib/lib.h"
 #include "log/log.h"
+#include "http/headers.h"
 
 #define SERVER_PORT 80
 #define RECV_BUFFER 1024
@@ -132,8 +133,22 @@ int main(int argc, char* argv[]) {
           log("Received complete headers and started body");
           break;
         } else {
-          concat_char_buffer(&headers, buffer, total_headers, recv_bytes);
+          concat_char_buffer(&headers, buffer, total_headers, RECV_BUFFER);
         }
+      }
+
+      // Before reading the body, we need to extract content length from headers
+      int read_body = header_exists("Content-Length", headers);
+      // Extract body
+      while (1 && read_body) {
+        memset(buffer, 0, sizeof(buffer));
+        recv_bytes = recv(connfd, buffer, RECV_BUFFER, MSG_DONTWAIT);
+        if (recv_bytes <= 0) {
+          log("Recieved headers");
+          break;
+        }
+        ++total_body;
+        concat_char_buffer(&body, buffer, total_body, RECV_BUFFER);
       }
 
       if (headers != NULL) {
@@ -147,6 +162,11 @@ int main(int argc, char* argv[]) {
       } else {
         printf("No body received\n");
       }
+
+      // Clean up
+      free(headers);
+      free(body);
+
       close(connfd);
       return EXIT_SUCCESS;
     }
