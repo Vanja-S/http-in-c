@@ -7,4 +7,6 @@ int header_exists(const char*, char*);
 
 int parse_request_line(char*);
 
+int GET()
+
 #endif  // SRC_HTTP_HTTP_H_

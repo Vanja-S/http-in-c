@@ -1,5 +1,6 @@
 // Copyright 2024 Vanja S.
 
+#include <stdio.h>
 #include <string.h>
 
 #include "http.h"
@@ -13,6 +14,7 @@ int parse_request_line(char * rl) {
   int i = 0;
   // Parse the method
   char method_buff[8];
+  memset(method_buff, 0, sizeof(char) * 8);
   for (; *(rl+i) != ' '; i++) {
     if (i > 6) {
       return 400;
@@ -28,6 +30,7 @@ int parse_request_line(char * rl) {
 
   // Parse URI
   char uri_buff[201];
+  memset(uri_buff, 0, sizeof(char) * 201);
   for (int j = 0; *(rl+i) != ' '; i++, j++) {
     if (j > 199) {
       return 414;
@@ -39,7 +42,9 @@ int parse_request_line(char * rl) {
 
   // Parse HTTP version
   char ver_buff[9];
+  memset(ver_buff, 0, sizeof(char) * 9);
   for (int j = 0; *(rl+i) != '\r'; i++, j++) {
+    if (*(rl+i) == '\r') break;
     ver_buff[j] = *(rl+i);
   }
   ver_buff[8] = '\0';
@@ -48,13 +53,17 @@ int parse_request_line(char * rl) {
     return 505;
   }
 
+  // Handle the request
   if (strcmp(method_buff, "GET") == 0) {
     // Handle the get request
+    printf("GET request recieved\n");
   } else if (strcmp(method_buff, "POST")) {
     // Handle the post request
+    printf("POST request recieved\n");
   }
 
 
   return 0;
 }
+
 

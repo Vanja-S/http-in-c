@@ -7,7 +7,7 @@ LOG_DIR=$(SRC_DIR)/log
 HTTP_DIR=$(SRC_DIR)/http
 
 # List all source files
-SRCS=$(SRC_DIR)/main.c $(LIB_DIR)/lib.c $(LIB_DIR)/string.c $(LOG_DIR)/log.c $(HTTP_DIR)/headers.c
+SRCS=$(SRC_DIR)/main.c $(LIB_DIR)/lib.c $(LIB_DIR)/string.c $(LOG_DIR)/log.c $(HTTP_DIR)/headers.c $(HTTP_DIR)/http.c
 # Generate object file names
 OBJS=$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
@@ -31,7 +31,7 @@ lib: $(OBJ_DIR)/lib/lib.o $(OBJ_DIR)/lib/string.o
 
 log: $(OBJ_DIR)/log/log.o
 
-http: $(OBJ_DIR)/http/headers.o
+http: $(OBJ_DIR)/http/headers.o $(OBJ_DIR)/http/http.o
 
 # Clean target
 clean:
